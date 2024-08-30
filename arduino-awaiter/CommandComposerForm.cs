@@ -32,6 +32,7 @@ namespace arduino_queue
                 textBoxX.Text = string.Empty; 
                 textBoxY.Text = string.Empty;
             };
+            buttonClearLog.Click += (sender, e) => richTextBox.Clear();
             textBoxX.TextChanged += localValidate;
             textBoxY.TextChanged += localValidate;
             checkBoxHome.CheckedChanged += localValidate;

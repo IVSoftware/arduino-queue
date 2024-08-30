@@ -34,6 +34,7 @@
             textBoxX = new TextBox();
             textBoxY = new TextBox();
             buttonClearCommand = new Button();
+            buttonClearLog = new Button();
             SuspendLayout();
             // 
             // buttonQueueCommand
@@ -52,7 +53,7 @@
             richTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             richTextBox.Location = new Point(12, 102);
             richTextBox.Name = "richTextBox";
-            richTextBox.Size = new Size(743, 330);
+            richTextBox.Size = new Size(754, 730);
             richTextBox.TabIndex = 4;
             richTextBox.Text = "";
             // 
@@ -100,18 +101,32 @@
             buttonClearCommand.Text = "X";
             buttonClearCommand.UseVisualStyleBackColor = false;
             // 
-            // MyForm
+            // buttonClearLog
+            // 
+            buttonClearLog.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonClearLog.BackColor = Color.Firebrick;
+            buttonClearLog.Font = new Font("Segoe UI", 8F);
+            buttonClearLog.ForeColor = Color.White;
+            buttonClearLog.Location = new Point(712, 113);
+            buttonClearLog.Name = "buttonClearLog";
+            buttonClearLog.Size = new Size(31, 30);
+            buttonClearLog.TabIndex = 5;
+            buttonClearLog.Text = "X";
+            buttonClearLog.UseVisualStyleBackColor = false;
+            // 
+            // CommandComposerForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(767, 444);
+            ClientSize = new Size(778, 844);
+            Controls.Add(buttonClearLog);
             Controls.Add(buttonClearCommand);
             Controls.Add(textBoxY);
             Controls.Add(textBoxX);
             Controls.Add(checkBoxHome);
             Controls.Add(richTextBox);
             Controls.Add(buttonQueueCommand);
-            Name = "MyForm";
+            Name = "CommandComposerForm";
             Text = "Command Composer";
             ResumeLayout(false);
             PerformLayout();
@@ -125,5 +140,6 @@
         private TextBox textBoxX;
         private TextBox textBoxY;
         private Button buttonClearCommand;
+        private Button buttonClearLog;
     }
 }
