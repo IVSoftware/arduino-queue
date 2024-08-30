@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace arduino_queue
 {
@@ -120,19 +121,29 @@ namespace arduino_queue
                         }
                         if (_currentCommand is null)
                         {
+                            Logger("QUEUE EMPTY");
                             return;
                         }
                         else
                         {
+                            Logger($"RUNNING: {_currentCommand.GetType().Name}");
                             switch (_currentCommand)
                             {
-                                case Command home when home is HomeCommand:
+                                case Command cmd when cmd is HomeCommand home:
                                     StartArduinoProcess(cmd: 2);
                                     await home;
                                     break;
-                                case Command xy when xy is XYCommand:
-                                    StartArduinoProcess(cmd: 0);
-                                    StartArduinoProcess(cmd: 1);
+                                case Command cmd when cmd is XYCommand xy:
+                                    if (xy.X is int x)
+                                    {
+                                        StartArduinoProcess(cmd: 0);
+                                    }
+                                    else xy.BusyX.Release();
+                                    if (xy.Y is int y)
+                                    {
+                                        StartArduinoProcess(cmd: 1);
+                                    }
+                                    else xy.BusyY.Release();
                                     await xy;
                                     break;
                                 default:
