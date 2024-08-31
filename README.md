@@ -1,4 +1,4 @@
-Your general question is about executing tasks in multiple stages, but specifically _"with Arduino over a serial port"_. In that case, you might experiment with a `Queue<Command>` structure for this, because you could load it up with any number of [polymorphic](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism) commands that await completion before proceeding to the next until the queue is empty. For example, your other [question]() and my [answer]() as a basis shows a `Home` command that waits for "home done", and an XY seeking command waits for both "x done" _and_ "y done" which can occur in either order. 
+Your general question is about executing tasks in multiple stages, but specifically _"with Arduino over a serial port"_. In that case, you might experiment with a `Queue<Command>` structure for this, because you could load it up with any number of [polymorphic](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism) commands that await completion before proceeding to the next until the queue is empty. For example, using your other [question]() and my [answer]() as a basis, you show a `Home` command that waits for "home done", and an XY seeking command waits for both "x done" _and_ "y done" which can occur in either order. 
 
 ___
 
@@ -241,15 +241,17 @@ private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
 }
 ```
 
+___
+
 #### Demo (WinForms)
 
-If the command is set up as shown, and the [QueueCommand] button is clicked 3x:
+Stage eight awaitable commands in memory using the [Save Command] button, and then rapidly enqueue them all using the [Run] menu item.
 
 - The Home command always completes before X or Y
-- The X and Y are awaited, and might come back in either order, but is an "atomic" transaction in the sense that both X and Y must complete before the queue will advance to the next program step.
-- A delay, if specified, will execute on the PC side (rather than spin on the Arduino side).
+- The X and Y are awaited, and might come back in either order, but this transaction will be "atomic" in the sense that both X and Y must release before the queue will advance to the next program step.
+- A delay, if specified, will execute on the PC side (rather than spin on the Arduino side) before advancing the queue.
 
-[![log][1]][1]
+[![logs][1]][1]
 
 ```
 public partial class CommandComposerForm : Form
@@ -310,6 +312,7 @@ public partial class CommandComposerForm : Form
             richTextBox.Clear();
             ArduinoComms.EnqueueAll(Memory);
         };
+        
         void Log(object? sender, LoggerMessageArgs e, bool timeStamp = true)
         {
             if(ReferenceEquals(sender, this)) richTextBox.SelectionColor = Color.Blue;
@@ -319,9 +322,6 @@ public partial class CommandComposerForm : Form
             richTextBox.SelectionStart = richTextBox.Text.Length;
             richTextBox.ScrollToCaret();
         }
-        ArduinoComms ArduinoComms { get; }
-        ObservableCollection<AwaitableCommand> Memory { get; } = new ObservableCollection<AwaitableCommand>();
-
         .
         .
         .
@@ -329,4 +329,5 @@ public partial class CommandComposerForm : Form
 }
 ```
 
-  [1]: https://i.sstatic.net/z1GxoPW5.png
+
+  [1]: https://i.sstatic.net/rEonMvak.png
