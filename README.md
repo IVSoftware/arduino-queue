@@ -1,7 +1,7 @@
 Your general question is about executing tasks in multiple stages, but specifically _"trying to get a call/response system working with an Arduino"_. In that case, you might experiment with a `Queue<Command>` structure for this, because you could load it up with any number of [polymorphic](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism) commands that await completion before proceeding to the next until the queue is empty. For example, using your other [question](https://stackoverflow.com/q/78925195/5438626) and my [answer](https://stackoverflow.com/a/78925871/5438626) as a basis, you show a `Home` command that waits for "home done", and an XY seeking command that waits for both "x done" _and_ "y done" which can occur in either order.
 ___
 
-*This question is getting enough upvotes that I'd like to take a little time to attempt something of a canonical answer loosely based on my years of experience programming [Linduino](https://www.analog.com/en/resources/evaluation-hardware-and-software/evaluation-development-platforms/linduino.html) at LTC and ADI.*
+*This question is getting enough upvotes that I'd like to attempt something of a canonical answer loosely based on my years of experience programming [Linduino](https://www.analog.com/en/resources/evaluation-hardware-and-software/evaluation-development-platforms/linduino.html) at LTC and ADI.*
 ___
 
 #### Awaitable Commands...
