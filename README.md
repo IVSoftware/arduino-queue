@@ -263,7 +263,8 @@ public partial class CommandComposerForm : Form
         InitializeComponent();
         ArduinoComms = new ArduinoComms();
         ArduinoComms.Log += Log;
-        buttonQueueCommand.Click += (sender, e) =>
+        
+        buttonEnqueue.Click += (sender, e) =>
         {
             if(checkBoxHome.Checked) ArduinoComms.Enqueue(new HomeCommand());
             var xyCommand = new XYCommand();
@@ -277,22 +278,14 @@ public partial class CommandComposerForm : Form
                 Log(this, $"MEMORY: {delayCommand}");
             }
         };
-        buttonClearCommand.Click += (sender, e) =>
-        {
-            checkBoxHome.Checked = false; 
-            textBoxX.Text = string.Empty; 
-            textBoxY.Text = string.Empty;
-            textBoxDelay.Text = string.Empty;
-            checkBoxHome.Focus();
-        };            
-        buttonSaveCommand.Click += (sender, e) =>
+        buttonMemPlus.Click += (sender, e) =>
         {
             AwaitableCommand command;
             if(checkBoxHome.Checked)
             {
                 command = new HomeCommand();
                 Memory.Add(command);
-                Log(this, $"MEMORY: {command}");
+                Log(this, new LoggerMessageArgs($"MEMORY: {command}", false));
             }
             var xyCommand = new XYCommand();
             if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
@@ -300,13 +293,13 @@ public partial class CommandComposerForm : Form
             if(xyCommand.Valid)
             {
                 Memory.Add(xyCommand);
-                Log(this, $"MEMORY: {xyCommand}");
+                Log(this, new LoggerMessageArgs($"MEMORY: {xyCommand}", false));
             }
             if (int.TryParse(textBoxDelay.Text, out int delay))
             {
                 var delayCommand = new DelayCommand { Delay = delay };
                 Memory.Add(delayCommand);
-                Log(this, $"MEMORY: {delayCommand}");
+                Log(this, new LoggerMessageArgs($"MEMORY: {delayCommand}", false));
             }
         };
         runToolStripMenuItem.Click += (sender, e) =>

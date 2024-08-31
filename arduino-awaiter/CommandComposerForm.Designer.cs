@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            buttonQueueCommand = new Button();
+            buttonEnqueue = new Button();
             richTextBox = new RichTextBox();
             checkBoxHome = new CheckBox();
             textBoxX = new TextBox();
@@ -45,25 +45,25 @@
             clearToolStripMenuItem = new ToolStripMenuItem();
             runToolStripMenuItem = new ToolStripMenuItem();
             listToolStripMenuItem = new ToolStripMenuItem();
-            tableLayoutPanel1 = new TableLayoutPanel();
-            buttonSaveCommand = new Button();
+            tableLayoutPanel = new TableLayoutPanel();
+            buttonMemPlus = new Button();
             textBoxDelay = new TextBox();
             menuStrip.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanel.SuspendLayout();
             SuspendLayout();
             // 
-            // buttonQueueCommand
+            // buttonEnqueue
             // 
-            buttonQueueCommand.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            buttonQueueCommand.Enabled = false;
-            buttonQueueCommand.Font = new Font("Segoe UI", 11F);
-            buttonQueueCommand.Location = new Point(435, 13);
-            buttonQueueCommand.Margin = new Padding(10, 0, 0, 0);
-            buttonQueueCommand.Name = "buttonQueueCommand";
-            buttonQueueCommand.Size = new Size(200, 41);
-            buttonQueueCommand.TabIndex = 4;
-            buttonQueueCommand.Text = "Queue Command";
-            buttonQueueCommand.UseVisualStyleBackColor = true;
+            buttonEnqueue.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            buttonEnqueue.Enabled = false;
+            buttonEnqueue.Font = new Font("Segoe UI", 11F);
+            buttonEnqueue.Location = new Point(435, 13);
+            buttonEnqueue.Margin = new Padding(10, 0, 0, 0);
+            buttonEnqueue.Name = "buttonEnqueue";
+            buttonEnqueue.Size = new Size(137, 41);
+            buttonEnqueue.TabIndex = 4;
+            buttonEnqueue.Text = "Enqueue";
+            buttonEnqueue.UseVisualStyleBackColor = true;
             // 
             // richTextBox
             // 
@@ -71,7 +71,7 @@
             richTextBox.Location = new Point(12, 135);
             richTextBox.Name = "richTextBox";
             richTextBox.ReadOnly = true;
-            richTextBox.Size = new Size(882, 797);
+            richTextBox.Size = new Size(756, 797);
             richTextBox.TabIndex = 4;
             richTextBox.Text = "";
             // 
@@ -118,7 +118,7 @@
             buttonClearCommand.BackColor = Color.Firebrick;
             buttonClearCommand.Font = new Font("Segoe UI", 6F);
             buttonClearCommand.ForeColor = Color.White;
-            buttonClearCommand.Location = new Point(848, 18);
+            buttonClearCommand.Location = new Point(722, 18);
             buttonClearCommand.Name = "buttonClearCommand";
             buttonClearCommand.Size = new Size(31, 30);
             buttonClearCommand.TabIndex = 6;
@@ -132,7 +132,7 @@
             buttonClearLog.BackColor = Color.Firebrick;
             buttonClearLog.Font = new Font("Segoe UI", 6F);
             buttonClearLog.ForeColor = Color.White;
-            buttonClearLog.Location = new Point(859, 149);
+            buttonClearLog.Location = new Point(733, 149);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(31, 30);
             buttonClearLog.TabIndex = 5;
@@ -149,7 +149,7 @@
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Padding = new Padding(6, 2, 0, 5);
-            menuStrip.Size = new Size(906, 43);
+            menuStrip.Size = new Size(780, 43);
             menuStrip.TabIndex = 6;
             menuStrip.Text = "menuStrip1";
             // 
@@ -211,46 +211,47 @@
             listToolStripMenuItem.Size = new Size(172, 40);
             listToolStripMenuItem.Text = "List";
             // 
-            // tableLayoutPanel1
+            // tableLayoutPanel
             // 
-            tableLayoutPanel1.ColumnCount = 10;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Controls.Add(checkBoxHome, 1, 0);
-            tableLayoutPanel1.Controls.Add(textBoxX, 2, 0);
-            tableLayoutPanel1.Controls.Add(textBoxY, 3, 0);
-            tableLayoutPanel1.Controls.Add(buttonQueueCommand, 5, 0);
-            tableLayoutPanel1.Controls.Add(buttonSaveCommand, 6, 0);
-            tableLayoutPanel1.Controls.Add(buttonClearCommand, 7, 0);
-            tableLayoutPanel1.Controls.Add(textBoxDelay, 4, 0);
-            tableLayoutPanel1.Location = new Point(12, 55);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.Padding = new Padding(0, 5, 0, 0);
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(874, 62);
-            tableLayoutPanel1.TabIndex = 7;
+            tableLayoutPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            tableLayoutPanel.ColumnCount = 10;
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel.Controls.Add(checkBoxHome, 1, 0);
+            tableLayoutPanel.Controls.Add(textBoxX, 2, 0);
+            tableLayoutPanel.Controls.Add(textBoxY, 3, 0);
+            tableLayoutPanel.Controls.Add(buttonEnqueue, 5, 0);
+            tableLayoutPanel.Controls.Add(buttonMemPlus, 6, 0);
+            tableLayoutPanel.Controls.Add(buttonClearCommand, 7, 0);
+            tableLayoutPanel.Controls.Add(textBoxDelay, 4, 0);
+            tableLayoutPanel.Location = new Point(12, 55);
+            tableLayoutPanel.Name = "tableLayoutPanel";
+            tableLayoutPanel.Padding = new Padding(0, 5, 0, 0);
+            tableLayoutPanel.RowCount = 1;
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel.Size = new Size(768, 62);
+            tableLayoutPanel.TabIndex = 7;
             // 
-            // buttonSaveCommand
+            // buttonMemPlus
             // 
-            buttonSaveCommand.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            buttonSaveCommand.Enabled = false;
-            buttonSaveCommand.Font = new Font("Segoe UI", 11F);
-            buttonSaveCommand.Location = new Point(645, 13);
-            buttonSaveCommand.Margin = new Padding(10, 0, 0, 0);
-            buttonSaveCommand.Name = "buttonSaveCommand";
-            buttonSaveCommand.Size = new Size(200, 41);
-            buttonSaveCommand.TabIndex = 5;
-            buttonSaveCommand.Text = "Save Command";
-            buttonSaveCommand.UseVisualStyleBackColor = true;
+            buttonMemPlus.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            buttonMemPlus.Enabled = false;
+            buttonMemPlus.Font = new Font("Segoe UI", 11F);
+            buttonMemPlus.Location = new Point(582, 13);
+            buttonMemPlus.Margin = new Padding(10, 0, 0, 0);
+            buttonMemPlus.Name = "buttonMemPlus";
+            buttonMemPlus.Size = new Size(137, 41);
+            buttonMemPlus.TabIndex = 5;
+            buttonMemPlus.Text = "Mem+";
+            buttonMemPlus.UseVisualStyleBackColor = true;
             // 
             // textBoxDelay
             // 
@@ -268,8 +269,8 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(906, 944);
-            Controls.Add(tableLayoutPanel1);
+            ClientSize = new Size(780, 944);
+            Controls.Add(tableLayoutPanel);
             Controls.Add(buttonClearLog);
             Controls.Add(richTextBox);
             Controls.Add(menuStrip);
@@ -278,15 +279,15 @@
             Text = "Command Composer";
             menuStrip.ResumeLayout(false);
             menuStrip.PerformLayout();
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel1.PerformLayout();
+            tableLayoutPanel.ResumeLayout(false);
+            tableLayoutPanel.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private Button buttonQueueCommand;
+        private Button buttonEnqueue;
         private RichTextBox richTextBox;
         private CheckBox checkBoxHome;
         private TextBox textBoxX;
@@ -294,8 +295,8 @@
         private Button buttonClearCommand;
         private Button buttonClearLog;
         private MenuStrip menuStrip;
-        private TableLayoutPanel tableLayoutPanel1;
-        private Button buttonSaveCommand;
+        private TableLayoutPanel tableLayoutPanel;
+        private Button buttonMemPlus;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem loadToolStripMenuItem;
         private ToolStripMenuItem saveToolStripMenuItem;

@@ -15,7 +15,7 @@ namespace arduino_queue
             InitializeComponent();
             ArduinoComms = new ArduinoComms();
             ArduinoComms.Log += Log;
-            buttonQueueCommand.Click += (sender, e) =>
+            buttonEnqueue.Click += (sender, e) =>
             {
                 if(checkBoxHome.Checked) ArduinoComms.Enqueue(new HomeCommand());
                 var xyCommand = new XYCommand();
@@ -29,7 +29,7 @@ namespace arduino_queue
                     Log(this, $"MEMORY: {delayCommand}");
                 }
             };
-            buttonSaveCommand.Click += (sender, e) =>
+            buttonMemPlus.Click += (sender, e) =>
             {
                 AwaitableCommand command;
                 if(checkBoxHome.Checked)
@@ -68,8 +68,8 @@ namespace arduino_queue
             checkBoxHome.CheckedChanged += localValidate;
             void localValidate(object? sender, EventArgs e)
             {
-                buttonQueueCommand.Enabled = 
-                    buttonSaveCommand.Enabled = 
+                buttonEnqueue.Enabled = 
+                    buttonMemPlus.Enabled = 
                     buttonClearCommand.Visible =
                     (int.TryParse(textBoxX.Text, out var _) ||
                      int.TryParse(textBoxY.Text, out var _) ||
@@ -128,6 +128,21 @@ namespace arduino_queue
                 runToolStripMenuItem.Enabled = 
                 listToolStripMenuItem.Enabled = 
                 Memory.Any();
+            foreach (var textBox in tableLayoutPanel.Controls.OfType<TextBox>())
+            {
+                textBox.KeyDown += (sender, e) =>
+                {
+                    switch (e.KeyData)
+                    {
+                        case Keys.Enter:
+                            e.SuppressKeyPress = true;
+                            // User TAB if you want to advance, and Enter
+                            // to select all in the current control.
+                            BeginInvoke(() => textBox.SelectAll());
+                            break;
+                    }
+                };
+            }
         }
 
         void Log(object? sender, LoggerMessageArgs e)
