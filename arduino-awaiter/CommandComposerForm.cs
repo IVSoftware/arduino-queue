@@ -66,7 +66,7 @@ namespace arduino_queue
                 Directory.CreateDirectory(Path.GetDirectoryName(ProgramPath));
                 File.WriteAllText(ProgramPath, JsonConvert.SerializeObject(Memory));
             };
-            clearToolStripMenuItem.Click += (sender, e) =>{ };
+            clearToolStripMenuItem.Click += (sender, e) => Memory.Clear();
             runToolStripMenuItem.Click += (sender, e) =>
             {
                 richTextBox.Clear();
