@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO.Ports;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -60,9 +61,17 @@ namespace arduino_queue
             }
             richTextBox.TextChanged += (sender, e) =>buttonClearLog.Visible = richTextBox.Text.Any();
             loadToolStripMenuItem.Click += (sender, e) =>{ };
-            saveToolStripMenuItem.Click += (sender, e) =>{ };
+            saveToolStripMenuItem.Click += (sender, e) =>
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(ProgramPath));
+                File.WriteAllText(ProgramPath, JsonConvert.SerializeObject(Memory));
+            };
             clearToolStripMenuItem.Click += (sender, e) =>{ };
-            runToolStripMenuItem.Click += (sender, e) => ArduinoComms.EnqueueAll(Memory);
+            runToolStripMenuItem.Click += (sender, e) =>
+            {
+                richTextBox.Clear();
+                ArduinoComms.EnqueueAll(Memory);
+            };
         }
 
         void Log(object? sender, LoggerMessageArgs e)
@@ -74,6 +83,12 @@ namespace arduino_queue
 
         ArduinoComms ArduinoComms { get; }
         List<Command> Memory { get; } = new List<Command>();
+
+        string ProgramPath => Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData),
+                Assembly.GetExecutingAssembly().GetName().Name,
+                "DefaultProgram.json");
     }
     [JsonConverter(typeof(CommandConverter))]
     public abstract class Command
