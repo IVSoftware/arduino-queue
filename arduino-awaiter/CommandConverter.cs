@@ -1,15 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json.Nodes;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace arduino_queue
 {
-    // N E E D S    T E S T I N G
     internal class CommandConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
@@ -21,7 +14,6 @@ namespace arduino_queue
             if (value is AwaitableCommand command)
             {
                 var type = command.GetType();
-
                 writer.WriteStartObject();
                 writer.WritePropertyName("Type");
                 writer.WriteValue(type.Name); 
