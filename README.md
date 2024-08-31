@@ -1,11 +1,11 @@
-Your general question is about executing tasks in multiple stages, but specifically _"trying to get a call/response system working with an Arduino"_. In that case, you might design an `AwaitableCommand` base class along with a `Queue<AwaitableCommand>` structure to run any number of derived actions sequentially until the queue is empty. For example, using your other [question](https://stackoverflow.com/q/78925195/5438626) and my [answer](https://stackoverflow.com/a/78925871/5438626) as a basis, you show a `Home` command that waits for "home done", and an XY seeking command that waits for both "x done" _and_ "y done" which can occur in either order. As an added benefit, any collection of `AwaitableCommand` could be easily written to, and reloaded from, a JSON file in order to save routines.
+Your general question is about executing tasks in multiple stages, but specifically _"trying to get a call/response system working with an Arduino"_. In that case, you might design an `AwaitableCommand` base class along with a `Queue<AwaitableCommand>` structure to run any number of derived actions sequentially until the queue is empty. (For example, using your other [question](https://stackoverflow.com/q/78925195/5438626) and my [answer](https://stackoverflow.com/a/78925871/5438626) as a basis, you show a `Home` command that waits for "home done", and an XY seeking command that waits for both "x done" _and_ "y done" which can occur in either order.) As an added benefit, any collection of `AwaitableCommand` could be easily written to, and reloaded from, a JSON file in order to save routines.
 ___
 
 *This question is getting enough upvotes that I'd like to attempt something of a canonical answer loosely based on my years of experience programming [Linduino](https://www.analog.com/en/resources/evaluation-hardware-and-software/evaluation-development-platforms/linduino.html) at LTC and ADI.*
 ___
 
 #### Awaitable Commands...
-To solve the problem of interacting with the same task awaiter multiple times, any new instance of a command will have its own (initially blocked) semaphore. This changes what it means when you say "request another instance of the same job" because now (following your example) each new instance of HomeCommand will have an entirely new instance of the awaiter as well.
+To solve the problem of interacting with the same task awaiter multiple times, any new instance of a command will have its own (initially blocked) semaphore. This is going to change what it means when you say "request another instance of the same job" because now (following your example) each new instance of HomeCommand will have an entirely new instance of the awaiter as well.
 ```
 public abstract class AwaitableCommand
 {
