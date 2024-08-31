@@ -91,6 +91,11 @@ namespace arduino_queue
                         Memory.Add(command);
                     }
                 }
+                richTextBox.Clear();
+                foreach (var command in Memory)
+                {
+                    Log(this, new LoggerMessageArgs($"{command}", false));
+                }
             };
             saveToolStripMenuItem.Click += (sender, e) =>
             {
@@ -108,7 +113,7 @@ namespace arduino_queue
                 richTextBox.Clear();
                 foreach (var command in Memory)
                 {
-                    richTextBox.AppendText($"{command}{Environment.NewLine}");
+                    Log(this, new LoggerMessageArgs($"{command}", false));
                 }
             };
             editInNotepadToolStripMenuItem.Click += (sender, e) =>
