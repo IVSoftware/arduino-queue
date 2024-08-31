@@ -176,7 +176,7 @@ ___
 
 #### Arduino Rx
 
-I've incorporated this idea into your original receiver method as a starting point. As an improvement to your code, consider checking the spL.BytesToRead against the number of bytes you're expecting because it's possible to get a partial return. In other words, if the command is expecting "home done\n" then check for System.Text.Encoding.ASCII.GetBytes("home done\n").Length and spin until the Arduino has pushed ALL the bytes into its RX buffer.
+I've incorporated this idea into your original receiver method as a starting point. As an improvement to your code, consider checking the `spL.BytesToRead` against the number of bytes you're expecting because it's possible to get a partial return. In other words, if the command is expecting "home done\n" then check for `System.Text.Encoding.ASCII.GetBytes("home done\n").Length` and spin until the Arduino has pushed ALL the bytes into its RX buffer.
 
 ```
 private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
