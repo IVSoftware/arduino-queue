@@ -22,6 +22,12 @@ namespace arduino_queue
                 if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
                 if(int.TryParse(textBoxY.Text, out int y)) xyCommand.Y = y;
                 if(xyCommand.Valid) ArduinoComms.Enqueue(xyCommand);
+                if (int.TryParse(textBoxDelay.Text, out int delay))
+                {
+                    var delayCommand = new DelayCommand { Delay = delay };
+                    Memory.Add(delayCommand);
+                    Log(this, $"MEMORY: {delayCommand}");
+                }
             };
             buttonSaveCommand.Click += (sender, e) =>
             {
@@ -40,16 +46,25 @@ namespace arduino_queue
                     Memory.Add(xyCommand);
                     Log(this, $"MEMORY: {xyCommand}");
                 }
+                if (int.TryParse(textBoxDelay.Text, out int delay))
+                {
+                    var delayCommand = new DelayCommand { Delay = delay };
+                    Memory.Add(delayCommand);
+                    Log(this, $"MEMORY: {delayCommand}");
+                }
             };
             buttonClearCommand.Click += (sender, e) =>
             {
                 checkBoxHome.Checked = false; 
                 textBoxX.Text = string.Empty; 
                 textBoxY.Text = string.Empty;
+                textBoxDelay.Text = string.Empty;
+                checkBoxHome.Focus();
             };
             buttonClearLog.Click += (sender, e) => richTextBox.Clear();
             textBoxX.TextChanged += localValidate;
             textBoxY.TextChanged += localValidate;
+            textBoxDelay.TextChanged += localValidate;
             checkBoxHome.CheckedChanged += localValidate;
             void localValidate(object? sender, EventArgs e)
             {
@@ -58,14 +73,29 @@ namespace arduino_queue
                     buttonClearCommand.Visible =
                     (int.TryParse(textBoxX.Text, out var _) ||
                      int.TryParse(textBoxY.Text, out var _) ||
+                     int.TryParse(textBoxDelay.Text, out var _) ||
                      checkBoxHome.Checked);
             }
             richTextBox.TextChanged += (sender, e) =>buttonClearLog.Visible = richTextBox.Text.Any();
-            loadToolStripMenuItem.Click += (sender, e) =>{ };
+            loadToolStripMenuItem.Click += (sender, e) =>
+            {
+                if(File.Exists(ProgramPath))
+                {
+                    var json = File.ReadAllText(ProgramPath);
+                    var staged = 
+                        JsonConvert.DeserializeObject<ObservableCollection<Command>>(json) ??
+                        new ObservableCollection<Command>();
+                    Memory.Clear();
+                    foreach(var command in staged)
+                    {
+                        Memory.Add(command);
+                    }
+                }
+            };
             saveToolStripMenuItem.Click += (sender, e) =>
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(ProgramPath));
-                File.WriteAllText(ProgramPath, JsonConvert.SerializeObject(Memory));
+                File.WriteAllText(ProgramPath, JsonConvert.SerializeObject(Memory, Formatting.Indented));
             };
             clearToolStripMenuItem.Click += (sender, e) => Memory.Clear();
             runToolStripMenuItem.Click += (sender, e) =>
@@ -81,6 +111,13 @@ namespace arduino_queue
                     richTextBox.AppendText($"{command}{Environment.NewLine}");
                 }
             };
+            editInNotepadToolStripMenuItem.Click += (sender, e) =>
+            {
+                if (File.Exists(ProgramPath))
+                {
+                    Process.Start("notepad.exe", ProgramPath);
+                }
+            };
             Memory.CollectionChanged += (sender, e) => 
                 clearToolStripMenuItem.Enabled = 
                 runToolStripMenuItem.Enabled = 
@@ -90,6 +127,8 @@ namespace arduino_queue
 
         void Log(object? sender, LoggerMessageArgs e)
         {
+            if(ReferenceEquals(sender, this)) richTextBox.SelectionColor = Color.Blue;
+            else richTextBox.SelectionColor = Color.Black;
             richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
             richTextBox.SelectionStart = richTextBox.Text.Length;
             richTextBox.ScrollToCaret();
@@ -156,6 +195,26 @@ namespace arduino_queue
             return builder.ToString();
         }
     }
+    /// <summary>
+    /// Program delay on PC side (not in Arduino)
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
+    public class DelayCommand : Command
+    {
+        [JsonProperty]
+        public int? Delay { get; set; }
+        public override TaskAwaiter GetAwaiter() =>
+            Task
+            .Delay(TimeSpan.FromMilliseconds(Delay ?? 0))
+            .GetAwaiter();
+        public override string ToString()
+        {
+            var builder = new StringBuilder(this.GetType().Name);
+            if (Delay != null)
+                builder.Append($" {Delay}");
+            return builder.ToString();
+        }
+    }
     public class ArduinoComms : Queue<Command>
     {
         object _critical = new object();
@@ -203,7 +262,7 @@ namespace arduino_queue
                         }
                         else
                         {
-                            Logger($"RUNNING: {_currentCommand.GetType().Name}");
+                            Logger($"RUNNING: {_currentCommand}");
                             switch (_currentCommand)
                             {
                                 case Command cmd when cmd is HomeCommand home:
@@ -223,7 +282,14 @@ namespace arduino_queue
                                     else xy.BusyY.Release();
                                     await xy;
                                     break;
+                                case Command cmd when cmd is DelayCommand delay:
+                                    // Spin this here, on the client side.
+                                    // Don't make Arduino do it.
+                                    await delay;
+                                    Logger($"Delay Done {delay.Delay}");
+                                    break;
                                 default:
+                                    Logger("UNRECOGNIZED COMMAND");
                                     break;
                             }
                         }
@@ -247,19 +313,19 @@ namespace arduino_queue
             {
                 case 0:
                     Task
-                        .Delay(TimeSpan.FromSeconds(_rando.Next(1, 4)))
+                        .Delay(TimeSpan.FromMilliseconds(_rando.Next(100, 500)))
                         .GetAwaiter()
                         .OnCompleted(() => Port_DataReceived(new MockSerialPort("x done"), default));
                     break;
                 case 1:
                     Task
-                        .Delay(TimeSpan.FromSeconds(_rando.Next(1, 4)))
+                        .Delay(TimeSpan.FromMilliseconds(_rando.Next(100, 500)))
                         .GetAwaiter()
                         .OnCompleted(() => Port_DataReceived(new MockSerialPort("y done"), default));
                     break;
                 case 2:
                     Task
-                        .Delay(TimeSpan.FromSeconds(_rando.Next(1, 4)))
+                        .Delay(TimeSpan.FromMilliseconds(_rando.Next(100, 500)))
                         .GetAwaiter()
                         .OnCompleted(() => Port_DataReceived(new MockSerialPort("home done"), default));
                     break;
@@ -311,7 +377,7 @@ namespace arduino_queue
                             if (_currentCommand is XYCommand xProcess)
                             {
                                 xProcess.BusyX.Release();
-                                Logger($"XDone {xProcess.X}");
+                                Logger($"X Done {xProcess.X}");
                             }
                             else Debug.Fail("Expecting response to match current command.");
                             break;
@@ -319,7 +385,7 @@ namespace arduino_queue
                             if (_currentCommand is XYCommand yProcess)
                             {
                                 yProcess.BusyY.Release();
-                                Logger($"YDone {yProcess.Y}");
+                                Logger($"Y Done {yProcess.Y}");
                             }
                             else Debug.Fail("Expecting response to match current command.");
                             break;
