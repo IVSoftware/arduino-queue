@@ -5,7 +5,7 @@ ___
 ___
 
 #### Awaitable Commands...
-
+To solve the problem of interacting with the same task awaiter multiple times, any new instance of a command will have its own (initially blocked) semaphore. This changes what it means when you say "request another instance of the same job" because now (following your example) each new instance of HomeCommand will have an entirely new instance of the awaiter as well.
 ```
 public abstract class AwaitableCommand
 {
@@ -176,7 +176,7 @@ ___
 
 #### Arduino Rx
 
-Here's a preliminary take on a receiver method. As an improvement, check the `spL.BytesToRead` against the number of bytes you're _expecting_ because it's possible to get a partial return. In other words, if the command is expecting "home done\n" then check for `System.Text.Encoding.ASCII.GetBytes("home done\n").Length` and spin until the Arduino has pushed ALL the bytes into its RX buffer.
+I've incorporated this idea into your original receiver method as a starting point. As an improvement to your code, consider checking the spL.BytesToRead against the number of bytes you're expecting because it's possible to get a partial return. In other words, if the command is expecting "home done\n" then check for System.Text.Encoding.ASCII.GetBytes("home done\n").Length and spin until the Arduino has pushed ALL the bytes into its RX buffer.
 
 ```
 private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -247,10 +247,13 @@ ___
 
 #### Demo (WinForms)
 
-Stage eight awaitable commands in memory using the [Save Command] button, and then rapidly enqueue them all using the [Run] menu item.
+The left panel shows eight awaitable commands that have been staged in memory using the [Mem+] button. 
 
-- The Home command always completes before X or Y
-- The X and Y are awaited, and might come back in either order, but this transaction will be "atomic" in the sense that both X and Y must release before the queue will advance to the next program step.
+The right panel shows the effect of clicking the [Run] menu item which rapidly dumps the list into the run queue.
+
+The log shows:
+- The Home command completing before X or Y.
+- Multiple repetitions of XY command, where X and Y are awaited, and might come back in either order, but this transaction will be "atomic" in the sense that both X and Y must release before the queue will advance to the next program step.
 - A delay, if specified, will execute on the PC side (rather than spin on the Arduino side) before advancing the queue.
 
 [![logs][1]][1]
