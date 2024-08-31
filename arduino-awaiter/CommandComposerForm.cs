@@ -12,12 +12,7 @@ namespace arduino_queue
         {
             InitializeComponent();
             ArduinoComms = new ArduinoComms();
-            ArduinoComms.Log += (sender, e) =>
-            {
-                richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
-                richTextBox.SelectionStart = richTextBox.Text.Length;
-                richTextBox.ScrollToCaret();
-            };
+            ArduinoComms.Log += Log;
             buttonQueueCommand.Click += (sender, e) =>
             {
                 if(checkBoxHome.Checked) ArduinoComms.Enqueue(new HomeCommand());
@@ -25,6 +20,24 @@ namespace arduino_queue
                 if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
                 if(int.TryParse(textBoxY.Text, out int y)) xyCommand.Y = y;
                 if(xyCommand.Valid) ArduinoComms.Enqueue(xyCommand);
+            };
+            buttonSaveCommand.Click += (sender, e) =>
+            {
+                Command command;
+                if(checkBoxHome.Checked)
+                {
+                    command = new HomeCommand();
+                    Memory.Add(command);
+                    Log(this, $"MEMORY: {command}");
+                }
+                var xyCommand = new XYCommand();
+                if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
+                if(int.TryParse(textBoxY.Text, out int y)) xyCommand.Y = y;
+                if(xyCommand.Valid)
+                {
+                    Memory.Add(xyCommand);
+                    Log(this, $"MEMORY: {xyCommand}");
+                }
             };
             buttonClearCommand.Click += (sender, e) =>
             {
@@ -38,18 +51,35 @@ namespace arduino_queue
             checkBoxHome.CheckedChanged += localValidate;
             void localValidate(object? sender, EventArgs e)
             {
-                buttonQueueCommand.Enabled = buttonClearCommand.Enabled =
+                buttonQueueCommand.Enabled = 
+                    buttonSaveCommand.Enabled = 
+                    buttonClearCommand.Visible =
                     (int.TryParse(textBoxX.Text, out var _) ||
                      int.TryParse(textBoxY.Text, out var _) ||
                      checkBoxHome.Checked);
             }
+            richTextBox.TextChanged += (sender, e) =>buttonClearLog.Visible = richTextBox.Text.Any();
+            loadToolStripMenuItem.Click += (sender, e) =>{ };
+            saveToolStripMenuItem.Click += (sender, e) =>{ };
+            clearToolStripMenuItem.Click += (sender, e) =>{ };
+            runToolStripMenuItem.Click += (sender, e) => ArduinoComms.EnqueueAll(Memory);
         }
+
+        void Log(object? sender, LoggerMessageArgs e)
+        {
+            richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
+            richTextBox.SelectionStart = richTextBox.Text.Length;
+            richTextBox.ScrollToCaret();
+        }
+
         ArduinoComms ArduinoComms { get; }
+        List<Command> Memory { get; } = new List<Command>();
     }
     [JsonConverter(typeof(CommandConverter))]
     public abstract class Command
     {
         public abstract TaskAwaiter GetAwaiter();
+        public override string ToString() => this.GetType().Name;
     }
     [JsonObject (MemberSerialization.OptIn)]
     public class HomeCommand : Command
@@ -87,6 +117,15 @@ namespace arduino_queue
                 await Task.WhenAll(tasks);
             }
         }
+        public override string ToString()
+        {
+            var builder = new StringBuilder(this.GetType().Name);
+            if (X != null)
+                builder.Append($" {X}");
+            if (Y != null)
+                builder.Append($" {Y}");
+            return builder.ToString();
+        }
     }
     public class ArduinoComms : Queue<Command>
     {
@@ -97,6 +136,14 @@ namespace arduino_queue
             lock (_critical)
             {
                 base.Enqueue(command);
+            }
+            RunQueue();
+        }
+        public void EnqueueAll(IEnumerable<Command> commands)
+        {
+            lock (_critical)
+            {
+                foreach (var command in commands) base.Enqueue(command);
             }
             RunQueue();
         }
@@ -259,13 +306,13 @@ namespace arduino_queue
             }
         }
         public event EventHandler<LoggerMessageArgs> Log;
-        public void Logger(string message) => Log?.Invoke(this, new LoggerMessageArgs(message));
+        public void Logger(string message) => Log?.Invoke(this, message);
     }
 
     public class LoggerMessageArgs
     {
-        public LoggerMessageArgs(string message) => Message = message;
-
-        public string Message { get; }
+        public static implicit operator LoggerMessageArgs(string msg) =>
+            new LoggerMessageArgs { Message = msg };
+        public string? Message { get; private set; }
     }
 }
