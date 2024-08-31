@@ -44,6 +44,7 @@
             runToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1 = new TableLayoutPanel();
             buttonSaveCommand = new Button();
+            listToolStripMenuItem = new ToolStripMenuItem();
             menuStrip.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
@@ -170,19 +171,21 @@
             // 
             // memoryToolStripMenuItem
             // 
-            memoryToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { clearToolStripMenuItem, runToolStripMenuItem });
+            memoryToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { clearToolStripMenuItem, runToolStripMenuItem, listToolStripMenuItem });
             memoryToolStripMenuItem.Name = "memoryToolStripMenuItem";
             memoryToolStripMenuItem.Size = new Size(120, 36);
             memoryToolStripMenuItem.Text = "Memory";
             // 
             // clearToolStripMenuItem
             // 
+            clearToolStripMenuItem.Enabled = false;
             clearToolStripMenuItem.Name = "clearToolStripMenuItem";
             clearToolStripMenuItem.Size = new Size(270, 40);
             clearToolStripMenuItem.Text = "Clear";
             // 
             // runToolStripMenuItem
             // 
+            runToolStripMenuItem.Enabled = false;
             runToolStripMenuItem.Name = "runToolStripMenuItem";
             runToolStripMenuItem.Size = new Size(270, 40);
             runToolStripMenuItem.Text = "Run";
@@ -226,6 +229,13 @@
             buttonSaveCommand.Text = "Save Command";
             buttonSaveCommand.UseVisualStyleBackColor = true;
             // 
+            // listToolStripMenuItem
+            // 
+            listToolStripMenuItem.Enabled = false;
+            listToolStripMenuItem.Name = "listToolStripMenuItem";
+            listToolStripMenuItem.Size = new Size(270, 40);
+            listToolStripMenuItem.Text = "List";
+            // 
             // CommandComposerForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -264,5 +274,6 @@
         private ToolStripMenuItem memoryToolStripMenuItem;
         private ToolStripMenuItem clearToolStripMenuItem;
         private ToolStripMenuItem runToolStripMenuItem;
+        private ToolStripMenuItem listToolStripMenuItem;
     }
 }

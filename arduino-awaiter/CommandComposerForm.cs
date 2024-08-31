@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Reflection;
@@ -72,6 +73,19 @@ namespace arduino_queue
                 richTextBox.Clear();
                 ArduinoComms.EnqueueAll(Memory);
             };
+            listToolStripMenuItem.Click += (sender, e) =>
+            {
+                richTextBox.Clear();
+                foreach (var command in Memory)
+                {
+                    richTextBox.AppendText($"{command}{Environment.NewLine}");
+                }
+            };
+            Memory.CollectionChanged += (sender, e) => 
+                clearToolStripMenuItem.Enabled = 
+                runToolStripMenuItem.Enabled = 
+                listToolStripMenuItem.Enabled = 
+                Memory.Any();
         }
 
         void Log(object? sender, LoggerMessageArgs e)
@@ -82,7 +96,7 @@ namespace arduino_queue
         }
 
         ArduinoComms ArduinoComms { get; }
-        List<Command> Memory { get; } = new List<Command>();
+        ObservableCollection<Command> Memory { get; } = new ObservableCollection<Command>();
 
         string ProgramPath => Path.Combine(
             Environment.GetFolderPath(
