@@ -57,10 +57,10 @@
             buttonQueueCommand.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             buttonQueueCommand.Enabled = false;
             buttonQueueCommand.Font = new Font("Segoe UI", 11F);
-            buttonQueueCommand.Location = new Point(387, 13);
+            buttonQueueCommand.Location = new Point(435, 13);
             buttonQueueCommand.Margin = new Padding(10, 0, 0, 0);
             buttonQueueCommand.Name = "buttonQueueCommand";
-            buttonQueueCommand.Size = new Size(220, 41);
+            buttonQueueCommand.Size = new Size(200, 41);
             buttonQueueCommand.TabIndex = 4;
             buttonQueueCommand.Text = "Queue Command";
             buttonQueueCommand.UseVisualStyleBackColor = true;
@@ -71,7 +71,7 @@
             richTextBox.Location = new Point(12, 135);
             richTextBox.Name = "richTextBox";
             richTextBox.ReadOnly = true;
-            richTextBox.Size = new Size(874, 697);
+            richTextBox.Size = new Size(882, 797);
             richTextBox.TabIndex = 4;
             richTextBox.Text = "";
             // 
@@ -96,7 +96,7 @@
             textBoxX.Margin = new Padding(10, 0, 0, 0);
             textBoxX.Name = "textBoxX";
             textBoxX.PlaceholderText = "X";
-            textBoxX.Size = new Size(56, 39);
+            textBoxX.Size = new Size(80, 39);
             textBoxX.TabIndex = 1;
             textBoxX.TextAlign = HorizontalAlignment.Center;
             // 
@@ -104,11 +104,11 @@
             // 
             textBoxY.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             textBoxY.Font = new Font("Segoe UI", 12F);
-            textBoxY.Location = new Point(191, 14);
+            textBoxY.Location = new Point(215, 14);
             textBoxY.Margin = new Padding(10, 0, 0, 0);
             textBoxY.Name = "textBoxY";
             textBoxY.PlaceholderText = "Y";
-            textBoxY.Size = new Size(56, 39);
+            textBoxY.Size = new Size(80, 39);
             textBoxY.TabIndex = 2;
             textBoxY.TextAlign = HorizontalAlignment.Center;
             // 
@@ -118,7 +118,7 @@
             buttonClearCommand.BackColor = Color.Firebrick;
             buttonClearCommand.Font = new Font("Segoe UI", 6F);
             buttonClearCommand.ForeColor = Color.White;
-            buttonClearCommand.Location = new Point(840, 18);
+            buttonClearCommand.Location = new Point(848, 18);
             buttonClearCommand.Name = "buttonClearCommand";
             buttonClearCommand.Size = new Size(31, 30);
             buttonClearCommand.TabIndex = 6;
@@ -132,7 +132,7 @@
             buttonClearLog.BackColor = Color.Firebrick;
             buttonClearLog.Font = new Font("Segoe UI", 6F);
             buttonClearLog.ForeColor = Color.White;
-            buttonClearLog.Location = new Point(851, 149);
+            buttonClearLog.Location = new Point(859, 149);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(31, 30);
             buttonClearLog.TabIndex = 5;
@@ -149,7 +149,7 @@
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Padding = new Padding(6, 2, 0, 5);
-            menuStrip.Size = new Size(898, 43);
+            menuStrip.Size = new Size(906, 43);
             menuStrip.TabIndex = 6;
             menuStrip.Text = "menuStrip1";
             // 
@@ -244,10 +244,10 @@
             buttonSaveCommand.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             buttonSaveCommand.Enabled = false;
             buttonSaveCommand.Font = new Font("Segoe UI", 11F);
-            buttonSaveCommand.Location = new Point(617, 13);
+            buttonSaveCommand.Location = new Point(645, 13);
             buttonSaveCommand.Margin = new Padding(10, 0, 0, 0);
             buttonSaveCommand.Name = "buttonSaveCommand";
-            buttonSaveCommand.Size = new Size(220, 41);
+            buttonSaveCommand.Size = new Size(200, 41);
             buttonSaveCommand.TabIndex = 5;
             buttonSaveCommand.Text = "Save Command";
             buttonSaveCommand.UseVisualStyleBackColor = true;
@@ -256,7 +256,7 @@
             // 
             textBoxDelay.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             textBoxDelay.Font = new Font("Segoe UI", 12F);
-            textBoxDelay.Location = new Point(257, 14);
+            textBoxDelay.Location = new Point(305, 14);
             textBoxDelay.Margin = new Padding(10, 0, 0, 0);
             textBoxDelay.Name = "textBoxDelay";
             textBoxDelay.PlaceholderText = "Delay";
@@ -268,7 +268,7 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(898, 844);
+            ClientSize = new Size(906, 944);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(buttonClearLog);
             Controls.Add(richTextBox);

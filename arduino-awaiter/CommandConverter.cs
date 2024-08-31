@@ -14,11 +14,11 @@ namespace arduino_queue
     {
         public override bool CanConvert(Type objectType)
         {
-            return typeof(Command).IsAssignableFrom(objectType);
+            return typeof(AwaitableCommand).IsAssignableFrom(objectType);
         }
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
-            if (value is Command command)
+            if (value is AwaitableCommand command)
             {
                 var type = command.GetType();
 
@@ -45,7 +45,7 @@ namespace arduino_queue
                 jsonObject["Type"] is object o && 
                 o.ToString() is string typeName &&
                 Type.GetType($"arduino_queue.{typeName}") is Type type &&
-                Activator.CreateInstance(type) is Command command)
+                Activator.CreateInstance(type) is AwaitableCommand command)
             {
                 serializer.Populate(jsonObject.CreateReader(), command);
                 return command;

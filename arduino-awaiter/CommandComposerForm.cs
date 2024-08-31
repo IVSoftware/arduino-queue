@@ -31,12 +31,12 @@ namespace arduino_queue
             };
             buttonSaveCommand.Click += (sender, e) =>
             {
-                Command command;
+                AwaitableCommand command;
                 if(checkBoxHome.Checked)
                 {
                     command = new HomeCommand();
                     Memory.Add(command);
-                    Log(this, $"MEMORY: {command}");
+                    Log(this, new LoggerMessageArgs($"MEMORY: {command}", false));
                 }
                 var xyCommand = new XYCommand();
                 if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
@@ -44,13 +44,13 @@ namespace arduino_queue
                 if(xyCommand.Valid)
                 {
                     Memory.Add(xyCommand);
-                    Log(this, $"MEMORY: {xyCommand}");
+                    Log(this, new LoggerMessageArgs($"MEMORY: {xyCommand}", false));
                 }
                 if (int.TryParse(textBoxDelay.Text, out int delay))
                 {
                     var delayCommand = new DelayCommand { Delay = delay };
                     Memory.Add(delayCommand);
-                    Log(this, $"MEMORY: {delayCommand}");
+                    Log(this, new LoggerMessageArgs($"MEMORY: {delayCommand}", false));
                 }
             };
             buttonClearCommand.Click += (sender, e) =>
@@ -83,8 +83,8 @@ namespace arduino_queue
                 {
                     var json = File.ReadAllText(ProgramPath);
                     var staged = 
-                        JsonConvert.DeserializeObject<ObservableCollection<Command>>(json) ??
-                        new ObservableCollection<Command>();
+                        JsonConvert.DeserializeObject<ObservableCollection<AwaitableCommand>>(json) ??
+                        new ObservableCollection<AwaitableCommand>();
                     Memory.Clear();
                     foreach(var command in staged)
                     {
@@ -129,13 +129,14 @@ namespace arduino_queue
         {
             if(ReferenceEquals(sender, this)) richTextBox.SelectionColor = Color.Blue;
             else richTextBox.SelectionColor = Color.Black;
-            richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
+            if(e.IncludeTimeStamp) richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
+            else richTextBox.AppendText($@"{e.Message}{Environment.NewLine}");
             richTextBox.SelectionStart = richTextBox.Text.Length;
             richTextBox.ScrollToCaret();
         }
 
         ArduinoComms ArduinoComms { get; }
-        ObservableCollection<Command> Memory { get; } = new ObservableCollection<Command>();
+        ObservableCollection<AwaitableCommand> Memory { get; } = new ObservableCollection<AwaitableCommand>();
 
         string ProgramPath => Path.Combine(
             Environment.GetFolderPath(
@@ -144,13 +145,13 @@ namespace arduino_queue
                 "DefaultProgram.json");
     }
     [JsonConverter(typeof(CommandConverter))]
-    public abstract class Command
+    public abstract class AwaitableCommand
     {
         public abstract TaskAwaiter GetAwaiter();
         public override string ToString() => this.GetType().Name;
     }
     [JsonObject (MemberSerialization.OptIn)]
-    public class HomeCommand : Command
+    public class HomeCommand : AwaitableCommand
     {
         public SemaphoreSlim Busy { get; } = new SemaphoreSlim(0, 1);
         public override TaskAwaiter GetAwaiter() => 
@@ -162,7 +163,7 @@ namespace arduino_queue
     /// Wait for X and Y in either order
     /// </summary>
     [JsonObject (MemberSerialization.OptIn)]
-    public class XYCommand : Command
+    public class XYCommand : AwaitableCommand
     {
         [JsonProperty]
         public int? X { get; set; }
@@ -199,7 +200,7 @@ namespace arduino_queue
     /// Program delay on PC side (not in Arduino)
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class DelayCommand : Command
+    public class DelayCommand : AwaitableCommand
     {
         [JsonProperty]
         public int? Delay { get; set; }
@@ -215,11 +216,11 @@ namespace arduino_queue
             return builder.ToString();
         }
     }
-    public class ArduinoComms : Queue<Command>
+    public class ArduinoComms : Queue<AwaitableCommand>
     {
         object _critical = new object();
         SemaphoreSlim _running = new SemaphoreSlim(1, 1);
-        public new void Enqueue(Command command)
+        public new void Enqueue(AwaitableCommand command)
         {
             lock (_critical)
             {
@@ -227,7 +228,7 @@ namespace arduino_queue
             }
             RunQueue();
         }
-        public void EnqueueAll(IEnumerable<Command> commands)
+        public void EnqueueAll(IEnumerable<AwaitableCommand> commands)
         {
             lock (_critical)
             {
@@ -236,7 +237,7 @@ namespace arduino_queue
             RunQueue();
         }
 
-        Command? _currentCommand = default;
+        AwaitableCommand? _currentCommand = default;
 
         private async void RunQueue()
         {
@@ -265,11 +266,11 @@ namespace arduino_queue
                             Logger($"RUNNING: {_currentCommand}");
                             switch (_currentCommand)
                             {
-                                case Command cmd when cmd is HomeCommand home:
+                                case AwaitableCommand cmd when cmd is HomeCommand home:
                                     StartArduinoProcess(cmd: 2);
                                     await home;
                                     break;
-                                case Command cmd when cmd is XYCommand xy:
+                                case AwaitableCommand cmd when cmd is XYCommand xy:
                                     if (xy.X is int x)
                                     {
                                         StartArduinoProcess(cmd: 0);
@@ -282,7 +283,7 @@ namespace arduino_queue
                                     else xy.BusyY.Release();
                                     await xy;
                                     break;
-                                case Command cmd when cmd is DelayCommand delay:
+                                case AwaitableCommand cmd when cmd is DelayCommand delay:
                                     // Spin this here, on the client side.
                                     // Don't make Arduino do it.
                                     await delay;
@@ -406,8 +407,14 @@ namespace arduino_queue
 
     public class LoggerMessageArgs
     {
-        public static implicit operator LoggerMessageArgs(string msg) =>
-            new LoggerMessageArgs { Message = msg };
-        public string? Message { get; private set; }
+        public LoggerMessageArgs(string message, bool includeTImeStamp = true)
+        {
+            Message = message;
+            IncludeTimeStamp = includeTImeStamp;
+        }
+        public static implicit operator LoggerMessageArgs(string message) =>
+            new LoggerMessageArgs(message);
+        public string? Message { get; }
+        public bool IncludeTimeStamp { get; } = true;
     }
 }

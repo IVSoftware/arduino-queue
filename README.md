@@ -5,13 +5,12 @@ ___
 #### Awaitable Commands...
 
 ```
-
-public abstract class Command
+public abstract class AwaitableCommand
 {
     public abstract TaskAwaiter GetAwaiter();
+    public override string ToString() => this.GetType().Name;
 }
-
-public class HomeCommand : Command
+public class HomeCommand : AwaitableCommand
 {
     public SemaphoreSlim Busy { get; } = new SemaphoreSlim(0, 1);
     public override TaskAwaiter GetAwaiter() => 
@@ -19,17 +18,16 @@ public class HomeCommand : Command
         .WaitAsync()
         .GetAwaiter();
 }
-
 /// <summary>
 /// Wait for X and Y in either order
 /// </summary>
-public class XYCommand : Command
+public class XYCommand : AwaitableCommand
 {
-    public SemaphoreSlim BusyX { get; } = new SemaphoreSlim(0, 1);
-    public SemaphoreSlim BusyY { get; } = new SemaphoreSlim(0, 1);
     public int? X { get; set; }
     public int? Y { get; set; }
     public bool Valid => X != null || Y != null;
+    public SemaphoreSlim BusyX { get; } = new SemaphoreSlim(0, 1);
+    public SemaphoreSlim BusyY { get; } = new SemaphoreSlim(0, 1);
 
     public override TaskAwaiter GetAwaiter()
     {
@@ -44,6 +42,33 @@ public class XYCommand : Command
             await Task.WhenAll(tasks);
         }
     }
+    public override string ToString()
+    {
+        var builder = new StringBuilder(this.GetType().Name);
+        if (X != null)
+            builder.Append($" {X}");
+        if (Y != null)
+            builder.Append($" {Y}");
+        return builder.ToString();
+    }
+}
+/// <summary>
+/// Program delay on PC side (not in Arduino)
+/// </summary>
+public class DelayCommand : AwaitableCommand
+{
+    public int? Delay { get; set; }
+    public override TaskAwaiter GetAwaiter() =>
+        Task
+        .Delay(TimeSpan.FromMilliseconds(Delay ?? 0))
+        .GetAwaiter();
+    public override string ToString()
+    {
+        var builder = new StringBuilder(this.GetType().Name);
+        if (Delay != null)
+            builder.Append($" {Delay}");
+        return builder.ToString();
+    }
 }
 ```
 
@@ -54,11 +79,11 @@ ___
 You mentioned (offline) that the Arduino can run concurrent processes, so a command like XYCommand might "Fire and Forget" two processes and then await for its BusyX and BusyY semaphores to be released in either order. 
 
 ```
-public class ArduinoComms : Queue<Command>
+public class ArduinoComms : Queue<AwaitableCommand>
 {
     object _critical = new object();
     SemaphoreSlim _running = new SemaphoreSlim(1, 1);
-    public new void Enqueue(Command command)
+    public new void Enqueue(AwaitableCommand command)
     {
         lock (_critical)
         {
@@ -66,8 +91,16 @@ public class ArduinoComms : Queue<Command>
         }
         RunQueue();
     }
+    public void EnqueueAll(IEnumerable<AwaitableCommand> commands)
+    {
+        lock (_critical)
+        {
+            foreach (var command in commands) base.Enqueue(command);
+        }
+        RunQueue();
+    }
 
-    Command? _currentCommand = default;
+    AwaitableCommand? _currentCommand = default;
 
     private async void RunQueue()
     {
@@ -93,14 +126,14 @@ public class ArduinoComms : Queue<Command>
                     }
                     else
                     {
-                        Logger($"RUNNING: {_currentCommand.GetType().Name}");
+                        Logger($"RUNNING: {_currentCommand}");
                         switch (_currentCommand)
                         {
-                            case Command cmd when cmd is HomeCommand home:
+                            case AwaitableCommand cmd when cmd is HomeCommand home:
                                 StartArduinoProcess(cmd: 2);
                                 await home;
                                 break;
-                            case Command cmd when cmd is XYCommand xy:
+                            case AwaitableCommand cmd when cmd is XYCommand xy:
                                 if (xy.X is int x)
                                 {
                                     StartArduinoProcess(cmd: 0);
@@ -113,7 +146,14 @@ public class ArduinoComms : Queue<Command>
                                 else xy.BusyY.Release();
                                 await xy;
                                 break;
+                            case AwaitableCommand cmd when cmd is DelayCommand delay:
+                                // Spin this here, on the client side.
+                                // Don't make Arduino do it.
+                                await delay;
+                                Logger($"Delay Done {delay.Delay}");
+                                break;
                             default:
+                                Logger("UNRECOGNIZED COMMAND");
                                 break;
                         }
                     }
@@ -206,7 +246,8 @@ private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
 If the command is set up as shown, and the [QueueCommand] button is clicked 3x:
 
 - The Home command always completes before X or Y
-- The X and Y are awaited, but might come back in either order.
+- The X and Y are awaited, and might come back in either order, but is an "atomic" transaction in the sense that both X and Y must complete before the queue will advance to the next program step.
+- A delay, if specified, will execute on the PC side (rather than spin on the Arduino side).
 
 [![log][1]][1]
 
@@ -217,12 +258,7 @@ public partial class CommandComposerForm : Form
     {
         InitializeComponent();
         ArduinoComms = new ArduinoComms();
-        ArduinoComms.Log += (sender, e) =>
-        {
-            richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
-            richTextBox.SelectionStart = richTextBox.Text.Length;
-            richTextBox.ScrollToCaret();
-        };
+        ArduinoComms.Log += Log;
         buttonQueueCommand.Click += (sender, e) =>
         {
             if(checkBoxHome.Checked) ArduinoComms.Enqueue(new HomeCommand());
@@ -230,25 +266,66 @@ public partial class CommandComposerForm : Form
             if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
             if(int.TryParse(textBoxY.Text, out int y)) xyCommand.Y = y;
             if(xyCommand.Valid) ArduinoComms.Enqueue(xyCommand);
+            if (int.TryParse(textBoxDelay.Text, out int delay))
+            {
+                var delayCommand = new DelayCommand { Delay = delay };
+                Memory.Add(delayCommand);
+                Log(this, $"MEMORY: {delayCommand}");
+            }
         };
         buttonClearCommand.Click += (sender, e) =>
         {
             checkBoxHome.Checked = false; 
             textBoxX.Text = string.Empty; 
             textBoxY.Text = string.Empty;
-        };
-        textBoxX.TextChanged += localValidate;
-        textBoxY.TextChanged += localValidate;
-        checkBoxHome.CheckedChanged += localValidate;
-        void localValidate(object? sender, EventArgs e)
+            textBoxDelay.Text = string.Empty;
+            checkBoxHome.Focus();
+        };            
+        buttonSaveCommand.Click += (sender, e) =>
         {
-            buttonQueueCommand.Enabled = buttonClearCommand.Enabled =
-                (int.TryParse(textBoxX.Text, out var _) ||
-                    int.TryParse(textBoxY.Text, out var _) ||
-                    checkBoxHome.Checked);
+            AwaitableCommand command;
+            if(checkBoxHome.Checked)
+            {
+                command = new HomeCommand();
+                Memory.Add(command);
+                Log(this, $"MEMORY: {command}");
+            }
+            var xyCommand = new XYCommand();
+            if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
+            if(int.TryParse(textBoxY.Text, out int y)) xyCommand.Y = y;
+            if(xyCommand.Valid)
+            {
+                Memory.Add(xyCommand);
+                Log(this, $"MEMORY: {xyCommand}");
+            }
+            if (int.TryParse(textBoxDelay.Text, out int delay))
+            {
+                var delayCommand = new DelayCommand { Delay = delay };
+                Memory.Add(delayCommand);
+                Log(this, $"MEMORY: {delayCommand}");
+            }
+        };
+        runToolStripMenuItem.Click += (sender, e) =>
+        {
+            richTextBox.Clear();
+            ArduinoComms.EnqueueAll(Memory);
+        };
+        void Log(object? sender, LoggerMessageArgs e, bool timeStamp = true)
+        {
+            if(ReferenceEquals(sender, this)) richTextBox.SelectionColor = Color.Blue;
+            else richTextBox.SelectionColor = Color.Black;
+            if(timeStamp) richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
+            else richTextBox.AppendText($@"{e.Message}{Environment.NewLine}");
+            richTextBox.SelectionStart = richTextBox.Text.Length;
+            richTextBox.ScrollToCaret();
         }
+        ArduinoComms ArduinoComms { get; }
+        ObservableCollection<AwaitableCommand> Memory { get; } = new ObservableCollection<AwaitableCommand>();
+
+        .
+        .
+        .
     }
-    ArduinoComms ArduinoComms { get; }
 }
 ```
 
