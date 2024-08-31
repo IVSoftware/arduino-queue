@@ -78,7 +78,7 @@ ___
 
 #### ... And the Queue that runs them
 
-You mentioned (offline) that the Arduino can run concurrent processes, so a command like XYCommand might "Fire and Forget" two processes and then await for its BusyX and BusyY semaphores to be released in either order. 
+You mentioned (offline) that the Arduino can run concurrent processes, so a command like `XYCommand` might "Fire and Forget" two processes and then await for its BusyX and BusyY semaphores to be released in either order. 
 
 ```
 public class ArduinoComms : Queue<AwaitableCommand>
