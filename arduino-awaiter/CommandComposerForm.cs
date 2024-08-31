@@ -201,15 +201,13 @@ namespace arduino_queue
         private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             byte[] buf;
-            switch (sender?.GetType().Name)
+            switch (sender)
             {
-                case nameof(SerialPort):
-                    var spL = (SerialPort)sender;
+                case object o when o is SerialPort spL:
                     buf = new byte[spL.BytesToRead]; //instantiates a buffer of appropriate length.
                     spL.Read(buf, 0, buf.Length); //reads from the sender, which inherits the data from the sender, which *is* our serial port.
                     break;
-                case nameof(MockSerialPort):
-                    var mspL = (MockSerialPort)sender;
+                case object o when o is MockSerialPort mspL:
                     buf = mspL.SimBuffer;
                     break;
                 default: throw new NotImplementedException();
@@ -237,17 +235,17 @@ namespace arduino_queue
                             if (_currentCommand is XYCommand xProcess)
                             {
                                 xProcess.BusyX.Release();
+                                Logger($"XDone {xProcess.X}");
                             }
                             else Debug.Fail("Expecting response to match current command.");
-                            Logger($"XDone");
                             break;
                         case string c when c.Contains("y done", StringComparison.OrdinalIgnoreCase):
                             if (_currentCommand is XYCommand yProcess)
                             {
                                 yProcess.BusyY.Release();
+                                Logger($"YDone {yProcess.Y}");
                             }
                             else Debug.Fail("Expecting response to match current command.");
-                            Logger($"YDone");
                             break;
 
                         default: break; //do nothing

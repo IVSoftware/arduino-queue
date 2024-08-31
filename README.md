@@ -85,7 +85,7 @@ public class ArduinoComms : Queue<Command>
                             _currentCommand = Dequeue();
                         }
                         else _currentCommand = null;
-                    }                    
+                    }
                     if (_currentCommand is null)
                     {
                         Logger("QUEUE EMPTY");
@@ -96,11 +96,11 @@ public class ArduinoComms : Queue<Command>
                         Logger($"RUNNING: {_currentCommand.GetType().Name}");
                         switch (_currentCommand)
                         {
-                            case Command home when home is HomeCommand:
+                            case Command cmd when cmd is HomeCommand home:
                                 StartArduinoProcess(cmd: 2);
                                 await home;
                                 break;
-                            case Command xy when xy is XYCommand:
+                            case Command cmd when cmd is XYCommand xy:
                                 if (xy.X is int x)
                                 {
                                     StartArduinoProcess(cmd: 0);
@@ -108,10 +108,9 @@ public class ArduinoComms : Queue<Command>
                                 else xy.BusyX.Release();
                                 if (xy.Y is int y)
                                 {
-                                    StartArduinoProcess(cmd: 0);
+                                    StartArduinoProcess(cmd: 1);
                                 }
                                 else xy.BusyY.Release();
-                                StartArduinoProcess(cmd: 1);
                                 await xy;
                                 break;
                             default:
