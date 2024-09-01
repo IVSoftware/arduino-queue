@@ -17,7 +17,8 @@ namespace arduino_queue
             ArduinoComms.Log += Log;
             buttonEnqueue.Click += (sender, e) =>
             {
-                // Add one or more commands to queue based on valid (or not) values in UI controls.
+                // Add one or more commands to queue based
+                // on valid (or not) values in UI controls.
                 if(checkBoxHome.Checked) ArduinoComms.Enqueue(new HomeCommand());
                 var xyCommand = new XYCommand();
                 if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
@@ -26,8 +27,7 @@ namespace arduino_queue
                 if (int.TryParse(textBoxDelay.Text, out int delay))
                 {
                     var delayCommand = new DelayCommand { Delay = delay };
-                    Memory.Add(delayCommand);
-                    Log(this, $"MEMORY: {delayCommand}");
+                    ArduinoComms.Enqueue(delayCommand);
                 }
             };
             buttonMemPlus.Click += (sender, e) =>

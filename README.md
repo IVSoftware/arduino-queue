@@ -1,7 +1,7 @@
 Your general question is about executing tasks in multiple stages, but specifically _"trying to get a call/response system working with an Arduino"_. In that case, you could experiment with designing an `AwaitableCommand` base class along with a `Queue<AwaitableCommand>` structure to run any number of derived actions sequentially until the queue is empty. (For example, using your other [question](https://stackoverflow.com/q/78925195/5438626) and my [answer](https://stackoverflow.com/a/78925871/5438626) as a basis, you show a `Home` command that waits for "home done", and an XY seeking command that waits for both "x done" _and_ "y done" which can occur in either order.) An additional benefit is that any collection of `AwaitableCommand` could be easily written to, and reloaded from, a JSON file in order to save routines and load them in bulk to the queue.
 ___
 
-*OPs question has gotten several upvotes so I'm attempting something of a canonical answer having worked with [Linduino](https://www.analog.com/en/resources/evaluation-hardware-and-software/evaluation-development-platforms/linduino.html) in test environments at LTC and ADI.*
+*OP's question has gotten several upvotes so I'm attempting something of a canonical answer having worked with [Linduino](https://www.analog.com/en/resources/evaluation-hardware-and-software/evaluation-development-platforms/linduino.html) in test environments at LTC and ADI.*
 ___
 
 #### Awaitable Commands...
@@ -322,7 +322,8 @@ public partial class CommandComposerForm : Form
         .
         .
         .
-        ObservableCollection<AwaitableCommand> Memory { get; } = new ObservableCollection<AwaitableCommand>();
+        ObservableCollection<AwaitableCommand> Memory { get; } = 
+            new ObservableCollection<AwaitableCommand>();
     }
 }
 ```
