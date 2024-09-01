@@ -267,6 +267,7 @@ public partial class CommandComposerForm : Form
         
         buttonEnqueue.Click += (sender, e) =>
         {
+            // Add one or more commands to queue based on valid (or not) values in UI controls.
             if(checkBoxHome.Checked) ArduinoComms.Enqueue(new HomeCommand());
             var xyCommand = new XYCommand();
             if(int.TryParse(textBoxX.Text, out int x)) xyCommand.X = x;
