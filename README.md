@@ -276,8 +276,7 @@ public partial class CommandComposerForm : Form
             if (int.TryParse(textBoxDelay.Text, out int delay))
             {
                 var delayCommand = new DelayCommand { Delay = delay };
-                Memory.Add(delayCommand);
-                Log(this, $"MEMORY: {delayCommand}");
+                ArduinoComms.Enqueue(delayCommand);
             }
         };
         buttonMemPlus.Click += (sender, e) =>
