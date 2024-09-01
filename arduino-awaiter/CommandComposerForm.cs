@@ -216,9 +216,9 @@ namespace arduino_queue
         {
             var builder = new StringBuilder(this.GetType().Name);
             if (X != null)
-                builder.Append($" {X}");
+                builder.Append($" x={X}");
             if (Y != null)
-                builder.Append($" {Y}");
+                builder.Append($" y={Y}");
             return builder.ToString();
         }
     }
