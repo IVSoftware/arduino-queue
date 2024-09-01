@@ -164,7 +164,7 @@ namespace arduino_queue
         ArduinoComms ArduinoComms { get; }
         ObservableCollection<AwaitableCommand> Memory { get; } = new ObservableCollection<AwaitableCommand>();
 
-        string ProgramPath => Path.Combine(
+        string ProgramPath { get; } = Path.Combine(
             Environment.GetFolderPath(
                 Environment.SpecialFolder.LocalApplicationData),
                 Assembly.GetExecutingAssembly().GetName().Name,
