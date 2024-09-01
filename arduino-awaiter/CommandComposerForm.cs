@@ -148,12 +148,17 @@ namespace arduino_queue
 
         void Log(object? sender, LoggerMessageArgs e)
         {
-            if(ReferenceEquals(sender, this)) richTextBox.SelectionColor = Color.Blue;
-            else richTextBox.SelectionColor = Color.Black;
-            if(e.IncludeTimeStamp) richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
-            else richTextBox.AppendText($@"{e.Message}{Environment.NewLine}");
-            richTextBox.SelectionStart = richTextBox.Text.Length;
-            richTextBox.ScrollToCaret();
+            // Marshall onto UI thread because SerialPort
+            // is usually running on a background thread.
+            BeginInvoke(() =>
+            {
+                if(ReferenceEquals(sender, this)) richTextBox.SelectionColor = Color.Blue;
+                else richTextBox.SelectionColor = Color.Black;
+                if(e.IncludeTimeStamp) richTextBox.AppendText($@"{DateTime.Now:hh\:mm\:ss\.ffff}: {e.Message}{Environment.NewLine}");
+                else richTextBox.AppendText($@"{e.Message}{Environment.NewLine}");
+                richTextBox.SelectionStart = richTextBox.Text.Length;
+                richTextBox.ScrollToCaret();
+            });
         }
 
         ArduinoComms ArduinoComms { get; }
