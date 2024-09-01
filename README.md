@@ -322,6 +322,7 @@ public partial class CommandComposerForm : Form
         .
         .
         .
+        ObservableCollection<AwaitableCommand> Memory { get; } = new ObservableCollection<AwaitableCommand>();
     }
 }
 ```
