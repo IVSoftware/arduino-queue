@@ -5,7 +5,7 @@ ___
 ___
 
 #### Awaitable Commands...
-To solve the problem of interacting with the same task awaiter multiple times, any new instance of a command will have its own (initially blocked) semaphore. This is going to change what it means when you say "request another instance of the same job" because now (following your example) each new instance of HomeCommand will have an entirely new instance of the awaiter as well.
+To solve the problem of interacting with the same task awaiter multiple times, any new instance of a command will have its own (initially blocked) semaphore. This is going to change what it means when you say "request another instance of the same job" because now for example each new instance of `HomeCommand` will have an entirely new instance of the awaiter as well.
 ```
 public abstract class AwaitableCommand
 {
