@@ -179,68 +179,66 @@ ___
 I've incorporated this idea into your original receiver method as a starting point. As an improvement to your code, consider checking the `spL.BytesToRead` against the number of bytes you're expecting because it's possible to get a partial return. In other words, if the command is expecting "home done\n" then check for `System.Text.Encoding.ASCII.GetBytes("home done\n").Length` and spin until the Arduino has pushed ALL the bytes into its RX buffer.
 
 ```
-private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
-{
-    byte[] buf;
-    switch (sender?.GetType().Name)
+    private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
-        case nameof(SerialPort):
-            var spL = (SerialPort)sender;
-            buf = new byte[spL.BytesToRead]; //instantiates a buffer of appropriate length.
-            spL.Read(buf, 0, buf.Length); //reads from the sender, which inherits the data from the sender, which *is* our serial port.
-            break;
-        case nameof(MockSerialPort):
-            var mspL = (MockSerialPort)sender;
-            buf = mspL.SimBuffer;
-            break;
-        default: throw new NotImplementedException();
-    }
-
-    var ascii = $"{System.Text.Encoding.ASCII.GetString(buf)}"; //assembles the byte array into a string.
-    Logger($"Received: {ascii}"); //prints the result for debug.
-    string[] thingsToParse = ascii.Split('\n'); //splits the string into an array along the newline in case multiple responses are sent in the same message.
-
-    foreach (string thing in thingsToParse) //checks each newline instance individually.
-    {
-        try
+        byte[] buf;
+        switch (sender)
         {
-            switch (thing)
-            {
-                case string c when c.Contains("home done", StringComparison.OrdinalIgnoreCase): //checks incoming data for the arduino's report phrase "Home done" when it is homed.
-                    if(_currentCommand is HomeCommand home)
-                    {
-                        home.Busy.Release();
-                    }
-                    else Debug.Fail("Expecting response to match current command.");
-                    Logger($"Homed");
-                    break;
-                case string c when c.Contains("x done", StringComparison.OrdinalIgnoreCase):
-                    if (_currentCommand is XYCommand xProcess)
-                    {
-                        xProcess.BusyX.Release();
-                    }
-                    else Debug.Fail("Expecting response to match current command.");
-                    Logger($"XDone");
-                    break;
-                case string c when c.Contains("y done", StringComparison.OrdinalIgnoreCase):
-                    if (_currentCommand is XYCommand yProcess)
-                    {
-                        yProcess.BusyY.Release();
-                    }
-                    else Debug.Fail("Expecting response to match current command.");
-                    Logger($"YDone");
-                    break;
+            case object o when o is SerialPort spL:
+                buf = new byte[spL.BytesToRead]; //instantiates a buffer of appropriate length.
+                spL.Read(buf, 0, buf.Length); //reads from the sender, which inherits the data from the sender, which *is* our serial port.
+                break;
+            case object o when o is MockSerialPort mspL:
+                buf = mspL.SimBuffer;
+                break;
+            default: throw new NotImplementedException();
+        }
 
-                default: break; //do nothing
+        var ascii = $"{System.Text.Encoding.ASCII.GetString(buf)}"; //assembles the byte array into a string.
+        Logger($"Received: {ascii}"); //prints the result for debug.
+        string[] thingsToParse = ascii.Split('\n'); //splits the string into an array along the newline in case multiple responses are sent in the same message.
+
+        foreach (string thing in thingsToParse) //checks each newline instance individually.
+        {
+            try
+            {
+                switch (thing)
+                {
+                    case string c when c.Contains("home done", StringComparison.OrdinalIgnoreCase): //checks incoming data for the arduino's report phrase "Home done" when it is homed.
+                        if(_currentCommand is HomeCommand home)
+                        {
+                            home.Busy.Release();
+                        }
+                        else Debug.Fail("Expecting response to match current command.");
+                        Logger($"Homed");
+                        break;
+                    case string c when c.Contains("x done", StringComparison.OrdinalIgnoreCase):
+                        if (_currentCommand is XYCommand xProcess)
+                        {
+                            xProcess.BusyX.Release();
+                            Logger($"X Done {xProcess.X}");
+                        }
+                        else Debug.Fail("Expecting response to match current command.");
+                        break;
+                    case string c when c.Contains("y done", StringComparison.OrdinalIgnoreCase):
+                        if (_currentCommand is XYCommand yProcess)
+                        {
+                            yProcess.BusyY.Release();
+                            Logger($"Y Done {yProcess.Y}");
+                        }
+                        else Debug.Fail("Expecting response to match current command.");
+                        break;
+
+                    default: break; //do nothing
+                }
+            }
+            catch (Exception)
+            {
+                // DO: figure out what went wrong, because this shouldn't happen
+                // DON'T: Crash
             }
         }
-        catch (Exception)
-        {
-            // DO: figure out what went wrong, because this shouldn't happen
-            // DON'T: Crash
-        }
     }
-}
 ```
 
 ___
